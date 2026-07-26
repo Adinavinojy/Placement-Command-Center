@@ -9,7 +9,7 @@ export default function MistakesView() {
   const [expandedDates, setExpandedDates] = useState({});
 
   useEffect(() => {
-    fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/mistakes`)
+    fetchAuth(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/mistakes`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {

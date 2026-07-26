@@ -26,7 +26,7 @@ export default function Onboarding({ initialData, onComplete }) {
       e.preventDefault();
       setIsSubmitting(true);
       try {
-         const response = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/profile/setup`, {
+         const response = await fetchAuth(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/profile/setup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData),
