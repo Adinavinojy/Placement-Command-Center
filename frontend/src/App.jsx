@@ -204,7 +204,7 @@ export default function App() {
       const finalMessage = currentText + extractedText;
       const endpoint = finalMessage.startsWith('/') ? '/api/commands' : '/api/chat';
 
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetchAuth(`http://localhost:8000${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: finalMessage })
