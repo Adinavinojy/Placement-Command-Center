@@ -1,3 +1,6 @@
+// Strip any trailing slash to avoid double-slash URLs (e.g. if env var is set with a trailing /)
+export const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+
 export async function fetchAuth(url, options = {}) {
   const token = localStorage.getItem('mentor_token');
   const headers = {

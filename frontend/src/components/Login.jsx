@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Mail, ArrowRight, KeyRound } from 'lucide-react';
-import { fetchAuth } from '../api';
+import { fetchAuth, API_BASE } from '../api';
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -20,7 +20,7 @@ export default function Login({ onLogin }) {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${endpoint}`, {
+      const res = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -47,7 +47,7 @@ export default function Login({ onLogin }) {
     setError('');
     setLoading(true);
     try {
-      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/set_password`, {
+      const res = await fetchAuth(`${API_BASE}/api/auth/set_password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: newPassword })
@@ -66,7 +66,7 @@ export default function Login({ onLogin }) {
   const handleGoogleSuccess = async (response) => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/google`, {
+      const res = await fetch(`${API_BASE}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: response.credential })
