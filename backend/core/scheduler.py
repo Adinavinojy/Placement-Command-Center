@@ -44,10 +44,12 @@ def check_and_notify(window_minutes=30):
                     app_name="Placement Command Center",
                     timeout=10
                 )
-                # Mark as notified so we don't repeat
-                db.mark_notified(email, deadline_id)
             except Exception as e:
-                print(f"Failed to send notification: {e}")
+                # Desktop notifications will fail on headless cloud servers (Render)
+                print(f"Skipped desktop notification (cloud environment): {e}")
+            finally:
+                # Always mark as notified so we don't spam the logs every 5 minutes
+                db.mark_notified(email, deadline_id)
 
 _scheduler = None
 
