@@ -1,5 +1,9 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from plyer import notification
+try:
+    from plyer import notification
+    NOTIFICATIONS_AVAILABLE = True
+except (ImportError, NotImplementedError):
+    NOTIFICATIONS_AVAILABLE = False
 import time
 from datetime import datetime
 from core import db
@@ -37,16 +41,18 @@ def check_and_notify(window_minutes=30):
                 
             msg = f"{title} at {time_str}"
             
-            try:
-                notification.notify(
-                    title=f"PCC: {company}",
-                    message=msg,
-                    app_name="Placement Command Center",
-                    timeout=10
-                )
-            except Exception as e:
-                # Desktop notifications will fail on headless cloud servers (Render)
-                print(f"Skipped desktop notification (cloud environment): {e}")
+            if NOTIFICATIONS_AVAILABLE:
+                try:
+                    notification.notify(
+                        title=f"PCC: {company}",
+                        message=msg,
+                        app_name="Placement Command Center",
+                        timeout=10
+                    )
+                except Exception as e:
+                    print(f"Skipped desktop notification: {e}")
+            else:
+                print(f"Reminder (notifications disabled in this environment): PCC: {company} — {msg}")
             finally:
                 # Always mark as notified so we don't spam the logs every 5 minutes
                 db.mark_notified(email, deadline_id)
