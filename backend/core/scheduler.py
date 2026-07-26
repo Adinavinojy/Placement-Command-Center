@@ -8,35 +8,46 @@ def check_and_notify(window_minutes=30):
     """
     Queries for deadlines due within the window_minutes and triggers notifications.
     """
-    upcoming = db.get_upcoming_deadlines(window_minutes)
-    if not upcoming:
+    import json
+    from pathlib import Path
+    users_file = Path(__file__).resolve().parent.parent / "users.json"
+    if not users_file.exists():
+        return
+    try:
+        users = json.loads(users_file.read_text(encoding="utf-8"))
+    except Exception:
         return
         
-    for row in upcoming:
-        deadline_id = row['id']
-        company = row['company']
-        title = row['title']
-        due_at = row['due_at']
-        
-        try:
-            due_dt = datetime.fromisoformat(due_at)
-            time_str = due_dt.strftime("%H:%M")
-        except ValueError:
-            time_str = due_at
+    for email in users.keys():
+        upcoming = db.get_upcoming_deadlines(email, window_minutes)
+        if not upcoming:
+            continue
             
-        msg = f"{title} at {time_str}"
-        
-        try:
-            notification.notify(
-                title=f"PCC: {company}",
-                message=msg,
-                app_name="Placement Command Center",
-                timeout=10
-            )
-            # Mark as notified so we don't repeat
-            db.mark_notified(deadline_id)
-        except Exception as e:
-            print(f"Failed to send notification: {e}")
+        for row in upcoming:
+            deadline_id = row['id']
+            company = row['company']
+            title = row['title']
+            due_at = row['due_at']
+            
+            try:
+                due_dt = datetime.fromisoformat(due_at)
+                time_str = due_dt.strftime("%H:%M")
+            except ValueError:
+                time_str = due_at
+                
+            msg = f"{title} at {time_str}"
+            
+            try:
+                notification.notify(
+                    title=f"PCC: {company}",
+                    message=msg,
+                    app_name="Placement Command Center",
+                    timeout=10
+                )
+                # Mark as notified so we don't repeat
+                db.mark_notified(email, deadline_id)
+            except Exception as e:
+                print(f"Failed to send notification: {e}")
 
 _scheduler = None
 

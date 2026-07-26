@@ -11,15 +11,9 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 # Model Configuration
 # ---------------------------------------------------------------------------
-# Smart model: handles complex tasks (study plans, chat, assessments)
-SMART_MODEL = "qwen3:8b"
-# Fast model: handles simple extraction tasks (JSON parsing, yes/no, matching)
-FAST_MODEL = "qwen2.5:1.5b"
-# Gemini API fallback (used only when ollama is unreachable)
+# We are fully migrated to Gemini API! No local models required.
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = "gemini-flash-latest"
-# Gemini model used specifically for study plan generation
-# gemini-flash-latest: active free tier model without limit: 0 restrictions
 GEMINI_PLAN_MODEL = "gemini-flash-latest"
 
 # ---------------------------------------------------------------------------
@@ -80,48 +74,17 @@ def _extract_json_array(text: str) -> list:
     return []
 
 
-def _call_ollama(prompt: str, system: str = None, model: str = None, timeout: int = 180) -> str:
-    """
-    Calls ollama and returns the clean text response.
-    Strips thinking tags from qwen3 models.
-    Falls back to Gemini REST API if ollama is unreachable.
-    """
-    if model is None:
-        model = SMART_MODEL
 
-    # Build messages list
-    messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": prompt})
-
-    try:
-        import ollama
-        resp = ollama.chat(model=model, messages=messages)
-        text = resp['message']['content']
-        return _strip_thinking(text).strip()
-    except ImportError:
-        print("[Agent] ollama package not installed, falling back to Gemini API")
-        return _call_gemini_fallback(prompt, system)
-    except Exception as e:
-        error_msg = str(e).lower()
-        if "connection" in error_msg or "refused" in error_msg or "timeout" in error_msg:
-            print(f"[Agent] Ollama unreachable ({e}), falling back to Gemini API")
-            return _call_gemini_fallback(prompt, system)
-        else:
-            print(f"[Agent] Ollama error: {e}")
-            return ""
 
 
 def _call_gemini_plan(prompt: str, system: str = None) -> str:
     """
     Dedicated Gemini API caller for study plan generation.
     Uses gemini-2.0-flash for high-quality, fast plan output.
-    Falls back to _call_fast (local) if API key is missing or quota exceeded.
     """
     if not GEMINI_API_KEY:
-        print("[Gemini] No API key — falling back to local model for plan generation.")
-        return _call_fast(prompt, system=system)
+        print("[Gemini] No API key configured!")
+        return "Error: No Gemini API Key configured in backend/.env"
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_PLAN_MODEL}:generateContent?key={GEMINI_API_KEY}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -145,22 +108,20 @@ def _call_gemini_plan(prompt: str, system: str = None) -> str:
                 time.sleep(wait)
             else:
                 print(f"[Gemini] Plan API error {r.status_code}: {r.text[:200]}")
-                print("[Gemini] Falling back to local model for plan generation.")
-                return _call_fast(prompt, system=system)
+                return "Error: Failed to generate study plan due to an API error."
         except Exception as e:
             print(f"[Gemini] Plan request error: {e}")
-            return _call_fast(prompt, system=system)
-    print("[Gemini] Max retries hit — falling back to local model.")
-    return _call_fast(prompt, system=system)
-
+            return "Error: Failed to connect to Gemini API."
+    print("[Gemini] Max retries hit — returning error.")
+    return "Error: Generation failed due to rate limits."
 
 def _call_gemini_fallback(prompt: str, system: str = None) -> str:
     """
-    Fallback: calls Gemini REST API when ollama is down.
+    Calls Gemini REST API. This is the primary inference method.
     """
     if not GEMINI_API_KEY:
-        print("[Agent] No Gemini API key configured and ollama is down.")
-        return ""
+        print("[Agent] No Gemini API key configured.")
+        return "Error: Gemini API key not configured."
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -183,11 +144,11 @@ def _call_gemini_fallback(prompt: str, system: str = None) -> str:
                 time.sleep(wait)
             else:
                 print(f"[Gemini] Error {r.status_code}: {r.text[:200]}")
-                return ""
+                return "I ran into a server error processing that request. Please try again."
         except Exception as e:
             print(f"[Gemini] Request error: {e}")
-            return ""
-    return ""
+            return "I encountered an error connecting to my AI model. Please try again in a few moments."
+    return "I'm currently receiving too many requests (rate limited by Google). Please give me a minute to cool down and try again!"
 
 
 def _call_fast(prompt: str, system: str = None) -> str:
