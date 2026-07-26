@@ -19,7 +19,8 @@ from core.auth import (
     create_session, 
     get_email_from_token, 
     change_password, 
-    requires_password
+    requires_password,
+    hash_password
 )
 
 # JWT Bearer for token extraction
@@ -111,6 +112,9 @@ async def lifespan(app: FastAPI):
     register_or_update_user(target_email, "Adina")
     vault.init_vault(target_email)
     db.init(target_email)
+    
+    # Seed demo account for portfolio
+    register_or_update_user("demo@pcc.dev", "Demo Recruiter", hash_password("Demo@123"))
 
     # Resilient Queue: Resume unprocessed assessments
     import threading
