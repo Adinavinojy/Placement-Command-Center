@@ -53,9 +53,9 @@ def check_and_notify(window_minutes=30):
                     print(f"Skipped desktop notification: {e}")
             else:
                 print(f"Reminder (notifications disabled in this environment): PCC: {company} — {msg}")
-            finally:
-                # Always mark as notified so we don't spam the logs every 5 minutes
-                db.mark_notified(email, deadline_id)
+
+            # Always mark as notified so we don't spam the logs every 5 minutes
+            db.mark_notified(email, deadline_id)
 
 _scheduler = None
 
