@@ -1,0 +1,32 @@
+# Placement Command Center — Python Backend Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+fastapi==0.139.2
+uvicorn==0.51.0
+python-multipart==0.0.32
+starlette==1.3.1
+
+# Authentication
+python-jose[cryptography]
+bcrypt==5.0.0
+passlib
+
+# AI / ML
+chromadb==1.5.9
+onnxruntime==1.23.2
+
+# PDF Processing
+PyMuPDF           # fitz — fast PDF text extraction
+pypdf==6.14.2    # fallback PDF extractor for scanned docs
+
+# HTTP
+requests==2.34.2
+
+# Utilities
+python-dotenv==1.2.2
+apscheduler==3.11.3
+aiofiles
+
+# Data
+pandas==2.3.3

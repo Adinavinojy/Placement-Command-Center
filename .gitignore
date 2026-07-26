@@ -1,0 +1,20 @@
+# Python / Backend
+venv/
+__pycache__/
+*.pyc
+.env
+backend/placement.db
+backend/knowledge_vault/
+backend/chroma_store/
+*.log
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.npm/
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+.gemini/
