@@ -30,3 +30,6 @@ aiofiles
 
 # Data
 pandas==2.3.3
+
+# Google OAuth
+google-auth
