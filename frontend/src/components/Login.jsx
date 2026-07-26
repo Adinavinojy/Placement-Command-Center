@@ -10,6 +10,7 @@ export default function Login({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [requiresPassword, setRequiresPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
   const googleButtonRef = useRef(null);
 
   const handleSubmit = async (e) => {
@@ -18,14 +19,16 @@ export default function Login({ onLogin }) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/login`, {
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
 
       if (!res.ok) {
-        throw new Error('Invalid credentials');
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Invalid credentials');
       }
 
       const data = await res.json();
@@ -185,9 +188,15 @@ export default function Login({ onLogin }) {
                   disabled={loading}
                   className="w-full py-3 bg-gradient-to-r from-[#cba36b] to-[#d9ba88] hover:from-[#d9ba88] hover:to-[#e6c999] text-[#0d0c0b] rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
                 >
-                  <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+                  <span>{loading ? (isLogin ? 'Signing in...' : 'Signing up...') : (isLogin ? 'Sign In' : 'Sign Up')}</span>
                   {!loading && <ArrowRight size={16} />}
                 </button>
+
+                <div className="mt-4 text-center">
+                  <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }} className="text-xs font-semibold tracking-wide text-[#cba36b] hover:text-[#e6c999] transition-colors focus:outline-none hover:underline decoration-[#cba36b]/30 underline-offset-4">
+                    {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                  </button>
+                </div>
               </form>
 
               <div className="mt-6 mb-6 relative">

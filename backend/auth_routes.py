@@ -38,6 +38,19 @@ def add_auth_routes(app):
             return {"token": token, "user": {"name": req.username}, "requires_password": False}
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    @app.post("/api/auth/register")
+    def register(req: LoginRequest):
+        from core.auth import _load_users, hash_password
+        users = _load_users()
+        if req.username in users:
+            raise HTTPException(status_code=400, detail="An account with this email already exists")
+            
+        name = req.username.split('@')[0]
+        register_or_update_user(req.username, name, hash_password(req.password))
+        
+        token = create_session(req.username)
+        return {"token": token, "user": {"name": name}, "requires_password": False}
+
     @app.post("/api/auth/google")
     def google_login(req: GoogleLoginRequest):
         try:
