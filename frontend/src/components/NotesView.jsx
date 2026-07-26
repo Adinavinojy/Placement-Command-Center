@@ -23,7 +23,7 @@ export default function NotesView({ onUpdate }) {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const res = await fetchAuth('http://localhost:8000/api/documents');
+      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents`);
       const data = await res.json();
       setDocuments(data.documents || {});
     } catch (e) {
@@ -35,7 +35,7 @@ export default function NotesView({ onUpdate }) {
 
   const fetchIndexStatus = useCallback(async () => {
     try {
-      const res = await fetchAuth('http://localhost:8000/api/notes/status');
+      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/notes/status`);
       const data = await res.json();
       setIndexStatus(data);
       return data;
@@ -81,7 +81,7 @@ export default function NotesView({ onUpdate }) {
 
     try {
       showToast('Uploading and indexing…');
-      await fetchAuth('http://localhost:8000/api/vault/upload', {
+      await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/vault/upload`, {
         method: 'POST',
         body: formData
       });
@@ -98,7 +98,7 @@ export default function NotesView({ onUpdate }) {
   const handleDelete = async (filename) => {
     if (!window.confirm(`Are you sure you want to delete ${filename}?`)) return;
     try {
-      await fetchAuth(`http://localhost:8000/api/documents/Notes/${filename}`, {
+      await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents/Notes/${filename}`, {
         method: 'DELETE'
       });
       await fetchDocuments();
@@ -116,7 +116,7 @@ export default function NotesView({ onUpdate }) {
     }
     try {
       setIsSearching(true);
-      const res = await fetchAuth('http://localhost:8000/api/notes/search', {
+      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/notes/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: searchQuery })
@@ -133,7 +133,7 @@ export default function NotesView({ onUpdate }) {
   const handleReindex = async () => {
     try {
       setReindexing(true);
-      await fetchAuth('http://localhost:8000/api/notes/reindex', { method: 'POST' });
+      await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/notes/reindex`, { method: 'POST' });
       showToast('Re-indexing started… search will unlock once all notes are ready.');
       startPolling();
     } catch (e) {
@@ -144,7 +144,7 @@ export default function NotesView({ onUpdate }) {
 
   const getPreviewUrl = (filename) => {
     const token = localStorage.getItem('mentor_token');
-    return `http://localhost:8000/api/documents/Notes/${filename}?token=${token}`;
+    return `${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents/Notes/${filename}?token=${token}`;
   };
 
   const isPreviewable = (filename) => {

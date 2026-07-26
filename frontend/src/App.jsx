@@ -66,7 +66,7 @@ export default function App() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    fetchAuth('http://localhost:8000/api/academic_profile')
+    fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/academic_profile`)
       .then(r => r.json())
       .then(d => {
         if (d.tenth !== undefined) {
@@ -76,7 +76,7 @@ export default function App() {
       })
       .catch(e => console.error(e));
 
-    fetchAuth('http://localhost:8000/api/improvement_review/saved')
+    fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/improvement_review/saved`)
       .then(r => r.json())
       .then(d => {
         if (d.review) setCareerReview(d.review);
@@ -87,13 +87,13 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
     // Always refresh dashboard data when switching tabs so skills/deadlines are fresh
-    fetchAuth('http://localhost:8000/api/dashboard')
+    fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/dashboard`)
       .then(res => res.json())
       .then(data => setDashboardData(data))
       .catch(err => console.error("Error refreshing dashboard data", err));
 
     // Fetch study plan unconditionally so it's available for the sidebar widget
-    fetchAuth('http://localhost:8000/api/study_plan')
+    fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/study_plan`)
       .then(res => res.json())
       .then(data => {
         if (data.plan && Array.isArray(data.plan)) {
@@ -105,7 +105,7 @@ export default function App() {
     if (activeTab === 'Study Plan') {
       setSelectedVersion(null);
       // Also fetch version history
-      fetchAuth('http://localhost:8000/api/study_plan/versions')
+      fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/study_plan/versions`)
         .then(res => res.json())
         .then(data => { if (data.versions) setPlanVersions(data.versions); })
         .catch(() => { });
@@ -115,7 +115,7 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
     if (activeTab === 'Documents' || activeTab === 'Generated Docs') {
-      fetchAuth('http://localhost:8000/api/documents')
+      fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents`)
         .then(res => res.json())
         .then(data => {
           if (data.documents) {
@@ -141,14 +141,14 @@ export default function App() {
     formData.append("category", category);
 
     try {
-      const res = await fetchAuth("http://localhost:8000/api/vault/upload", {
+      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/vault/upload`, {
         method: "POST",
         body: formData
       });
       if (res.ok) {
         setToastMessage("Document uploaded successfully!");
         setTimeout(() => setToastMessage(""), 3000);
-        fetchAuth('http://localhost:8000/api/documents')
+        fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents`)
           .then(r => r.json())
           .then(data => { if (data.documents) setDocumentsList(data.documents); });
       }
@@ -159,13 +159,13 @@ export default function App() {
 
   const handleDeleteDoc = async (category, filename) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/documents/${category}/${filename}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents/${category}/${filename}`, {
         method: 'DELETE'
       });
       if (res.ok) {
         setToastMessage("Document deleted.");
         setTimeout(() => setToastMessage(""), 3000);
-        fetchAuth('http://localhost:8000/api/documents')
+        fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents`)
           .then(r => r.json())
           .then(data => { if (data.documents) setDocumentsList(data.documents); });
       }
@@ -192,7 +192,7 @@ export default function App() {
       if (currentFile) {
         const formData = new FormData();
         formData.append("file", currentFile);
-        const uploadRes = await fetchAuth("http://localhost:8000/api/upload", {
+        const uploadRes = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/upload`, {
           method: "POST",
           body: formData
         });
@@ -204,7 +204,7 @@ export default function App() {
       const finalMessage = currentText + extractedText;
       const endpoint = finalMessage.startsWith('/') ? '/api/commands' : '/api/chat';
 
-      const response = await fetchAuth(`http://localhost:8000${endpoint}`, {
+      const response = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: finalMessage })
@@ -219,7 +219,7 @@ export default function App() {
 
       // Auto-refresh dashboard data after any command so UI updates without manual refresh
       if (finalMessage.startsWith('/')) {
-        fetchAuth('http://localhost:8000/api/dashboard')
+        fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/dashboard`)
           .then(r => r.json())
           .then(dbData => setDashboardData(dbData))
           .catch(err => console.error("Auto-refresh failed", err));
@@ -228,7 +228,7 @@ export default function App() {
       if (data.response && (data.response.includes("regenerating") || data.response.includes("updating your study plan") || data.response.includes("restructuring your curated study plan"))) {
         const pollInterval = setInterval(async () => {
           try {
-            const res = await fetchAuth('http://localhost:8000/api/status/study_plan');
+            const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/status/study_plan`);
             const statusData = await res.json();
             if (!statusData.is_generating) {
               clearInterval(pollInterval);
@@ -236,12 +236,12 @@ export default function App() {
               setTimeout(() => setToastMessage(""), 5000);
 
               // Refresh both study plan and dashboard when background task finishes
-              fetchAuth('http://localhost:8000/api/study_plan')
+              fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/study_plan`)
                 .then(r => r.json())
                 .then(d => {
                   if (d.plan && Array.isArray(d.plan)) setStudyPlan(d.plan);
                 });
-              fetchAuth('http://localhost:8000/api/dashboard')
+              fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/dashboard`)
                 .then(r => r.json())
                 .then(dbData => setDashboardData(dbData));
             }
@@ -262,7 +262,7 @@ export default function App() {
     if (!isAuthenticated) return;
     
     // Fetch onboarding status
-    fetchAuth('http://localhost:8000/api/onboarding/status')
+    fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/onboarding/status`)
       .then(res => res.json())
       .then(status => {
         setOnboardingStatus(status);
@@ -270,11 +270,11 @@ export default function App() {
           setShowOnboarding(true);
         } else {
           // Profile exists, we can fetch dashboard
-          fetchAuth('http://localhost:8000/api/profile')
+          fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/profile`)
             .then(res => res.json())
             .then(data => {
               setProfile(data.profile);
-              fetchAuth('http://localhost:8000/api/dashboard')
+              fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/dashboard`)
                 .then(res => res.json())
                 .then(dbData => setDashboardData(dbData))
                 .catch(err => console.error("Failed to fetch dashboard data.", err));
@@ -291,7 +291,7 @@ export default function App() {
     if (isAuthenticated && onboardingStatus?.has_taken_assessment) {
       let pollRef = null;
       const check = () => {
-        fetchAuth('http://localhost:8000/api/assessment/eval_status')
+        fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/assessment/eval_status`)
           .then(res => res.json())
           .then(data => {
             setGlobalEvalStatus(data.status);
@@ -357,10 +357,10 @@ export default function App() {
                    isInitial={!onboardingStatus.has_taken_assessment} 
                    onClose={() => setShowAssessment(false)} 
                    onComplete={() => {
-                     fetchAuth('http://localhost:8000/api/onboarding/status')
+                     fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/onboarding/status`)
                        .then(res => res.json())
                        .then(status => setOnboardingStatus(status));
-                     fetchAuth('http://localhost:8000/api/dashboard')
+                     fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/dashboard`)
                        .then(r => r.json())
                        .then(dbData => setDashboardData(dbData));
                    }} 
@@ -604,12 +604,12 @@ export default function App() {
                           const fn = e.target.value;
                           if (!fn) {
                             // Latest
-                            fetchAuth('http://localhost:8000/api/study_plan')
+                            fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/study_plan`)
                               .then(r => r.json())
                               .then(d => { if (d.plan) setStudyPlan(d.plan); });
                             setSelectedVersion(null);
                           } else {
-                            fetch(`http://localhost:8000/api/study_plan/versions/${fn}`)
+                            fetch(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/study_plan/versions/${fn}`)
                               .then(r => r.json())
                               .then(d => { if (d.plan) setStudyPlan(d.plan); });
                             setSelectedVersion(fn);
@@ -719,7 +719,7 @@ export default function App() {
                             return;
                           }
                           setReviewLoading(true);
-                          fetchAuth("http://localhost:8000/api/improvement_review/generate", { method: "POST" })
+                          fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/improvement_review/generate`, { method: "POST" })
                             .then(r => r.json())
                             .then(d => { setCareerReview(d.review); setReviewLoading(false); })
                             .catch(e => { console.error(e); setReviewLoading(false); });
@@ -762,7 +762,7 @@ export default function App() {
                       {isEditingScores && (
                         <button
                           onClick={() => {
-                            fetchAuth("http://localhost:8000/api/academic_profile", {
+                            fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/academic_profile`, {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify(academicProfile)
@@ -805,7 +805,7 @@ export default function App() {
               <CalendarView
                 dashboardData={dashboardData}
                 onEventAdded={() => {
-                  fetchAuth('http://localhost:8000/api/dashboard')
+                  fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/dashboard`)
                     .then(res => res.json())
                     .then(data => setDashboardData(data))
                     .catch(err => console.error("Error refreshing dashboard data", err));
@@ -813,7 +813,7 @@ export default function App() {
               />
             ) : activeTab === 'Documents' ? (
               <DocumentsView onUpdate={() => {
-                fetchAuth('http://localhost:8000/api/onboarding/status')
+                fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/onboarding/status`)
                   .then(res => res.json())
                   .then(status => setOnboardingStatus(status));
               }} />
@@ -840,7 +840,7 @@ export default function App() {
                           <p className="text-sm font-medium text-[#e0d8cd] truncate max-w-[200px]">{filename}</p>
                         </div>
                         <a 
-                          href={`http://localhost:8000/api/documents/Generated/${filename}`} 
+                          href={`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents/Generated/${filename}`} 
                           download
                           className="p-2 text-[#8a7b6b] hover:text-[#e0d8cd] hover:bg-[#2a2522] rounded-lg transition-colors"
                         >
@@ -862,7 +862,7 @@ export default function App() {
                 theme={theme} 
                 setTheme={setTheme}
                 onUpdate={() => {
-                  fetchAuth('http://localhost:8000/api/onboarding/status')
+                  fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/onboarding/status`)
                     .then(res => res.json())
                     .then(status => setOnboardingStatus(status));
                 }} 
@@ -908,7 +908,7 @@ export default function App() {
                     <button 
                       onClick={async () => {
                         try {
-                          const res = await fetchAuth('http://localhost:8000/api/round_prep', {
+                          const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/round_prep`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({

@@ -460,7 +460,7 @@ function ResultsPage({ assessment, aptAnswers, codingScores, aptTimeSpent, codin
         correct_answer: q.answer
       }));
 
-    fetchAuth('http://localhost:8000/api/assessment/submit', {
+    fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/assessment/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -474,7 +474,7 @@ function ResultsPage({ assessment, aptAnswers, codingScores, aptTimeSpent, codin
 
     const poll = setInterval(async () => {
       try {
-        const res = await fetchAuth('http://localhost:8000/api/assessment/eval_status');
+        const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/assessment/eval_status`);
         const data = await res.json();
         if (data.status === 'done' || data.status === 'failed') {
           setEvalStatus(data.status);
@@ -496,7 +496,7 @@ function ResultsPage({ assessment, aptAnswers, codingScores, aptTimeSpent, codin
       fetchingExplainRef.current[q.id] = true;
       setLoadingExplain(prev => ({ ...prev, [q.id]: true }));
       try {
-        const res = await fetchAuth('http://localhost:8000/api/assessment/explain', {
+        const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/assessment/explain`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -699,7 +699,7 @@ export default function Assessment({ onClose, isInitial, onComplete }) {
       if (userAns && userAns !== q.answer && !fetchingExplainRef.current[q.id] && !aiExplanations[q.id]) {
         fetchingExplainRef.current[q.id] = true;
         setLoadingExplain(prev => ({ ...prev, [q.id]: true }));
-        fetchAuth('http://localhost:8000/api/assessment/explain', {
+        fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/assessment/explain`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -744,7 +744,7 @@ export default function Assessment({ onClose, isInitial, onComplete }) {
 
     if (isInitial) {
       try {
-        const res = await fetchAuth('http://localhost:8000/api/assessment/initial');
+        const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/assessment/initial`);
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         // Ensure aptitude questions have section tags
@@ -762,7 +762,7 @@ export default function Assessment({ onClose, isInitial, onComplete }) {
     }
 
     try {
-      const res = await fetchAuth('http://localhost:8000/api/assessment/generate');
+      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/assessment/generate`);
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setAssessment(data);

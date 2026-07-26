@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 .env
 backend/placement.db
+backend/users.json
 backend/knowledge_vault/
 backend/chroma_store/
 *.log

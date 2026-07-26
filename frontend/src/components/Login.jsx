@@ -18,7 +18,7 @@ export default function Login({ onLogin }) {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/auth/login', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -44,7 +44,7 @@ export default function Login({ onLogin }) {
     setError('');
     setLoading(true);
     try {
-      const res = await fetchAuth('http://localhost:8000/api/auth/set_password', {
+      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/auth/set_password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: newPassword })
@@ -63,7 +63,7 @@ export default function Login({ onLogin }) {
   const handleGoogleSuccess = async (response) => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/auth/google', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: response.credential })

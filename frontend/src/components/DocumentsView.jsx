@@ -18,7 +18,7 @@ export default function DocumentsView({ onUpdate }) {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const res = await fetchAuth('http://localhost:8000/api/documents');
+      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents`);
       const data = await res.json();
       setDocuments(data.documents || {});
       
@@ -50,7 +50,7 @@ export default function DocumentsView({ onUpdate }) {
     formData.append('file', files[0]);
 
     try {
-      await fetchAuth('http://localhost:8000/api/vault/upload', {
+      await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/vault/upload`, {
         method: 'POST',
         body: formData
       });
@@ -64,7 +64,7 @@ export default function DocumentsView({ onUpdate }) {
   const handleDelete = async (category, filename) => {
     if (!window.confirm(`Are you sure you want to delete ${filename}?`)) return;
     try {
-      await fetchAuth(`http://localhost:8000/api/documents/${category}/${filename}`, {
+      await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents/${category}/${filename}`, {
         method: 'DELETE'
       });
       await fetchDocuments();
@@ -76,7 +76,7 @@ export default function DocumentsView({ onUpdate }) {
 
   const getPreviewUrl = (category, filename) => {
     const token = localStorage.getItem('mentor_token');
-    return `http://localhost:8000/api/documents/${category}/${filename}?token=${token}`;
+    return `${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/documents/${category}/${filename}?token=${token}`;
   };
 
   const isPreviewable = (filename) => {

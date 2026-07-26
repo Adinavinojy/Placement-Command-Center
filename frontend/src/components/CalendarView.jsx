@@ -67,7 +67,7 @@ export default function CalendarView({ dashboardData, onEventAdded }) {
                       String(selectedDate.getMonth() + 1).padStart(2, '0') + "-" + 
                       String(selectedDate.getDate()).padStart(2, '0');
                       
-      const res = await fetch('http://localhost:8000/api/events', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -19,7 +19,7 @@ export default function SettingsView({ onLogout, onUpdate, theme, setTheme }) {
   const [userManual, setUserManual] = useState('');
 
   useEffect(() => {
-    fetchAuth('http://localhost:8000/api/manual')
+    fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/manual`)
       .then(r => r.json())
       .then(d => { if (d.content) setUserManual(d.content); })
       .catch(e => console.error("Failed to fetch manual", e));
@@ -29,7 +29,7 @@ export default function SettingsView({ onLogout, onUpdate, theme, setTheme }) {
     try {
       const token = localStorage.getItem('mentor_token');
       // Append token as a query param since we are using window.location.href
-      window.location.href = `http://localhost:8000/api/export?token=${token}`;
+      window.location.href = `${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/export?token=${token}`;
     } catch (e) {
       console.error('Failed to export data', e);
     }
@@ -38,7 +38,7 @@ export default function SettingsView({ onLogout, onUpdate, theme, setTheme }) {
   const handleClearData = async () => {
     if (window.confirm("WARNING: This will delete ALL your uploaded documents, generated plans, and profile data! Are you absolutely sure you want to start as a clean slate?")) {
       try {
-        const res = await fetchAuth('http://localhost:8000/api/profile/data', { method: 'DELETE' });
+        const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/profile/data`, { method: 'DELETE' });
         if (res.ok) {
           window.location.reload();
         } else {
@@ -55,7 +55,7 @@ export default function SettingsView({ onLogout, onUpdate, theme, setTheme }) {
       const confirmText = window.prompt("Type DELETE to permanently delete your account:");
       if (confirmText === "DELETE") {
         try {
-          const res = await fetchAuth('http://localhost:8000/api/profile/account', { method: 'DELETE' });
+          const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/profile/account`, { method: 'DELETE' });
           if (res.ok) {
             onLogout();
           } else {
@@ -75,7 +75,7 @@ export default function SettingsView({ onLogout, onUpdate, theme, setTheme }) {
     setIsChangingPwd(true);
 
     try {
-      const res = await fetchAuth('http://localhost:8000/api/auth/change_password', {
+      const res = await fetchAuth(`${import.meta.env.VITE_API_URL || \'http://localhost:8000\'}/api/auth/change_password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ current_password: currentPwd, new_password: newPwd })
