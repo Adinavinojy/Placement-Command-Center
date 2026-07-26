@@ -155,9 +155,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-from auth_routes import add_auth_routes
-add_auth_routes(app)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -169,6 +166,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from auth_routes import add_auth_routes
+add_auth_routes(app)
 
 @app.get("/api/profile")
 def get_profile(email: str = Depends(get_current_user)):

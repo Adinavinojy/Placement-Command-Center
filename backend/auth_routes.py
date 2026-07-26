@@ -1,7 +1,4 @@
-from fastapi import APIRouter
 from pydantic import BaseModel
-from google.oauth2 import id_token
-from google.auth.transport import requests
 
 class LoginRequest(BaseModel):
     username: str
@@ -54,7 +51,9 @@ def add_auth_routes(app):
     @app.post("/api/auth/google")
     def google_login(req: GoogleLoginRequest):
         try:
-            idinfo = id_token.verify_oauth2_token(req.token, requests.Request(), CLIENT_ID)
+            from google.oauth2 import id_token
+            from google.auth.transport import requests as google_requests
+            idinfo = id_token.verify_oauth2_token(req.token, google_requests.Request(), CLIENT_ID)
             email = idinfo['email']
             name = idinfo.get('name', email.split('@')[0])
             
