@@ -158,10 +158,10 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://placement-command-center-gox91mvj5-go-pro5.vercel.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173"
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1258,6 +1258,32 @@ def get_study_plan_version(filename: str, email: str = Depends(get_current_user)
 def get_study_plan_status(email: str = Depends(get_current_user)):
     global is_generating_plan
     return {"is_generating": is_generating_plan.get(email, False)}
+
+class AtsRequest(BaseModel):
+    job_description: str
+
+@app.post("/api/ats/scan")
+def scan_ats(req: AtsRequest, email: str = Depends(get_current_user)):
+    try:
+        cv_dir = vault.get_vault_path(email) / "CV"
+        if not cv_dir.exists():
+            raise HTTPException(status_code=404, detail="CV not found. Please upload a CV first.")
+        
+        cv_files = list(cv_dir.glob("*"))
+        if not cv_files:
+            raise HTTPException(status_code=404, detail="CV not found. Please upload a CV first.")
+            
+        cv_path = cv_files[0]
+        from core.vault import _text
+        cv_text = _text(cv_path)
+        
+        report = agent.generate_ats_report(cv_text, req.job_description)
+        return report
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
