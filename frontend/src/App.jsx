@@ -584,7 +584,9 @@ export default function App() {
                 </div>
               </div>
             ) : activeTab === 'ATS Matcher' ? (
-              <ResumeATS />
+              <div className="flex-1 glass-panel rounded-2xl flex flex-col p-8 bg-[#161311] overflow-y-auto custom-scrollbar">
+                <ResumeATS />
+              </div>
             ) : activeTab === 'Study Plan' ? (
               <div className="flex-1 glass-panel rounded-2xl flex flex-col p-8 bg-[#161311] overflow-y-auto custom-scrollbar">
                 <div className="flex items-center justify-between mb-6">
