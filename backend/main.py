@@ -45,21 +45,21 @@ def get_current_user(request: Request) -> str:
 # Gemini model used specifically for study plan generation
 GEMINI_PLAN_MODEL = "gemini-flash-latest"
 
-is_generating_plan = False
-last_plan_generated_at = 0.0  # unix timestamp of last successful plan generation
+is_generating_plan = {}
+last_plan_generated_at = {}  # dict of unix timestamps of last successful plan generation per user
 PLAN_DEBOUNCE_SECONDS = 60    # ignore triggers within 60s of each other
 
 def trigger_plan_regeneration(email: str, trigger: str = "manual"):
     global is_generating_plan, last_plan_generated_at
-    if is_generating_plan:
-        print(f"[Plan] Skipping regen for '{trigger}' — already generating.")
+    if is_generating_plan.get(email, False):
+        print(f"[Plan] Skipping regen for '{trigger}' — already generating for {email}.")
         return
     import time as _time
-    since_last = _time.time() - last_plan_generated_at
+    since_last = _time.time() - last_plan_generated_at.get(email, 0.0)
     if since_last < PLAN_DEBOUNCE_SECONDS and trigger != "manual":
         print(f"[Plan] Debounce: last plan was {since_last:.0f}s ago, skipping '{trigger}'.")
         return
-    is_generating_plan = True
+    is_generating_plan[email] = True
     try:
         with db.conn(email) as c:
             rows = c.execute("SELECT company, title, due_at FROM deadlines ORDER BY due_at ASC").fetchall()
@@ -78,11 +78,11 @@ def trigger_plan_regeneration(email: str, trigger: str = "manual"):
         parsed = json.loads(plan_json)
         if isinstance(parsed, list) and len(parsed) > 0:
             version_file = vault.save_study_plan_version(email, plan_json, trigger, available_hours)
-            last_plan_generated_at = _time.time()
+            last_plan_generated_at[email] = _time.time()
     except Exception as e:
         traceback.print_exc()
     finally:
-        is_generating_plan = False
+        is_generating_plan[email] = False
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -894,12 +894,12 @@ def export_data(email: str = Depends(get_current_user)):
 
 @app.delete("/api/delete_all")
 def delete_all_data(email: str = Depends(get_current_user)):
-    # Delete the Personal folder inside knowledge_vault
-    personal_dir = os.path.join("knowledge_vault", "Personal")
-    if os.path.exists(personal_dir):
-        shutil.rmtree(personal_dir)
-        # Recreate the folder structure
-        os.makedirs(personal_dir, exist_ok=True)
+    # Delete the user's entire isolated vault
+    vault_dir = vault.get_vault_path(email)
+    if vault_dir.exists():
+        shutil.rmtree(vault_dir)
+        # Recreate the base folder structure
+        vault.init_vault(email)
         return {"status": "success", "message": "All personal data cleared"}
     return {"status": "success", "message": "No data found to delete"}
 
@@ -1257,7 +1257,7 @@ def get_study_plan_version(filename: str, email: str = Depends(get_current_user)
 @app.get("/api/status/study_plan")
 def get_study_plan_status(email: str = Depends(get_current_user)):
     global is_generating_plan
-    return {"is_generating": is_generating_plan}
+    return {"is_generating": is_generating_plan.get(email, False)}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000)

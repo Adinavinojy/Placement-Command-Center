@@ -4,8 +4,18 @@ import uuid
 import hashlib
 
 USERS_FILE = Path("users.json")
-# In-memory session store: token -> email
-SESSIONS = {}
+SESSIONS_FILE = Path("sessions.json")
+
+def _load_sessions():
+    if not SESSIONS_FILE.exists():
+        return {}
+    try:
+        return json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
+    except:
+        return {}
+
+def _save_sessions(sessions: dict):
+    SESSIONS_FILE.write_text(json.dumps(sessions, indent=2), encoding="utf-8")
 
 def _load_users():
     if not USERS_FILE.exists():
@@ -61,11 +71,14 @@ def requires_password(email: str) -> bool:
 
 def create_session(email: str) -> str:
     token = str(uuid.uuid4())
-    SESSIONS[token] = email
+    sessions = _load_sessions()
+    sessions[token] = email
+    _save_sessions(sessions)
     return token
 
 def get_email_from_token(token: str) -> str:
-    return SESSIONS.get(token)
+    sessions = _load_sessions()
+    return sessions.get(token)
 
 def change_password(email: str, current_pass: str, new_pass: str) -> bool:
     users = _load_users()
