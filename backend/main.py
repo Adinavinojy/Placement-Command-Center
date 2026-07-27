@@ -1261,6 +1261,7 @@ def get_study_plan_status(email: str = Depends(get_current_user)):
 
 class AtsRequest(BaseModel):
     job_description: str
+    company_name: str
 
 @app.post("/api/ats/scan")
 def scan_ats(req: AtsRequest, email: str = Depends(get_current_user)):
@@ -1278,9 +1279,47 @@ def scan_ats(req: AtsRequest, email: str = Depends(get_current_user)):
         cv_text = _text(cv_path)
         
         report = agent.generate_ats_report(cv_text, req.job_description)
+        
+        # Save report
+        ats_dir = vault.get_vault_path(email) / "Generated" / "ATS_Reports"
+        ats_dir.mkdir(parents=True, exist_ok=True)
+        import time
+        import json
+        safe_company = "".join(c if c.isalnum() else "_" for c in req.company_name)
+        filename = f"{safe_company}_{int(time.time())}.json"
+        
+        report["company_name"] = req.company_name
+        report["timestamp"] = int(time.time())
+        report["job_description"] = req.job_description
+        
+        with open(ats_dir / filename, "w", encoding="utf-8") as f:
+            json.dump(report, f)
+            
         return report
     except HTTPException:
         raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/ats/history")
+def get_ats_history(email: str = Depends(get_current_user)):
+    try:
+        ats_dir = vault.get_vault_path(email) / "Generated" / "ATS_Reports"
+        if not ats_dir.exists():
+            return {"history": []}
+            
+        history = []
+        import json
+        for file in ats_dir.glob("*.json"):
+            try:
+                with open(file, "r", encoding="utf-8") as f:
+                    history.append(json.load(f))
+            except:
+                pass
+        
+        history.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+        return {"history": history}
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

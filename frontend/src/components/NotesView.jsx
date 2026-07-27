@@ -258,13 +258,13 @@ export default function NotesView({ onUpdate }) {
             {searchResults.length > 0 && (
               <div className="mt-4 space-y-3 max-h-72 overflow-y-auto pr-1" style={{scrollbarWidth: 'thin', scrollbarColor: '#2a2522 transparent'}}>
                 {searchResults.map((res, i) => (
-                  <div key={i} className="bg-[#0d0c0b] border border-[#2a2522] rounded-lg p-4 hover:border-[#cba36b]/30 transition-all">
+                  <a key={i} href={getPreviewUrl(res.filename)} target="_blank" rel="noopener noreferrer" className="block bg-[#0d0c0b] border border-[#2a2522] rounded-lg p-4 hover:border-[#cba36b]/30 hover:bg-[#1a1715] transition-all cursor-pointer">
                     <p className="text-xs text-[#cba36b] mb-1.5 font-semibold flex items-center space-x-1">
                       <FileText size={11} />
                       <span>{res.filename}</span>
                     </p>
                     <p className="text-sm text-[#c0b8a8] leading-relaxed">{res.text}</p>
-                  </div>
+                  </a>
                 ))}
               </div>
             )}
@@ -303,7 +303,7 @@ export default function NotesView({ onUpdate }) {
             <span className="text-xs text-[#8a7b6b] bg-[#2a2522] px-2 py-0.5 rounded-full">{visibleFiles.length}</span>
           </div>
           
-          <div className="divide-y divide-[#2a2522]">
+          <div className="divide-y divide-[#2a2522] overflow-y-auto max-h-[60vh] custom-scrollbar">
             {visibleFiles.map(filename => {
               const isPdfNote = filename.toLowerCase().endsWith('.pdf');
               const thumbnailName = `thumbnail_${filename}.png`;
