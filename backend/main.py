@@ -1270,7 +1270,17 @@ def scan_ats(req: AtsRequest, email: str = Depends(get_current_user)):
         if not cv_text.strip():
             raise HTTPException(status_code=404, detail="CV not found. Please upload a CV first.")
         
-        report = agent.generate_ats_report(cv_text, req.job_description)
+        import re
+        def _strip_pii(text: str) -> str:
+            text = re.sub(r'[\w\.-]+@[\w\.-]+\.\w+', '[EMAIL_REDACTED]', text)
+            text = re.sub(r'\+?\d[\d\-\s()]{7,15}\d', '[PHONE_REDACTED]', text)
+            text = re.sub(r'https?://(?:www\.)?(?:linkedin|github)\.com/[^\s]+', '[URL_REDACTED]', text)
+            # Basic fallback for names (assumes name is at the top of the CV) - but for safety we'll rely on redaction
+            return text
+            
+        safe_cv_text = _strip_pii(cv_text)
+        
+        report = agent.generate_ats_report(safe_cv_text, req.job_description)
         
         # Save report
         ats_dir = vault.get_vault_path(email) / "Generated" / "ATS_Reports"
