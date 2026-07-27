@@ -887,13 +887,16 @@ Return ONLY a valid JSON object matching exactly this schema:
 """
     r = _call_gemini_fallback(prompt, system="You are an expert ATS. You must return only a valid JSON object.")
     try:
-        return _extract_json_object(r)
+        data = _extract_json_object(r)
+        if not data or "match_score" not in data:
+            raise ValueError("Invalid JSON extracted from Gemini response")
+        return data
     except Exception as e:
         print(f"Failed to parse ATS report JSON: {e}")
         return {
             "match_score": 0,
             "missing_keywords": [],
             "matching_keywords": [],
-            "formatting_feedback": "Failed to parse ATS response.",
-            "actionable_advice": ["Please try again."]
+            "formatting_feedback": f"Error communicating with AI: {r}",
+            "actionable_advice": ["Please try again in a few seconds."]
         }

@@ -1266,17 +1266,9 @@ class AtsRequest(BaseModel):
 @app.post("/api/ats/scan")
 def scan_ats(req: AtsRequest, email: str = Depends(get_current_user)):
     try:
-        cv_dir = vault.get_vault_path(email) / "CV"
-        if not cv_dir.exists():
+        cv_text = vault.get_cv_text(email)
+        if not cv_text.strip():
             raise HTTPException(status_code=404, detail="CV not found. Please upload a CV first.")
-        
-        cv_files = list(cv_dir.glob("*"))
-        if not cv_files:
-            raise HTTPException(status_code=404, detail="CV not found. Please upload a CV first.")
-            
-        cv_path = cv_files[0]
-        from core.vault import _text
-        cv_text = _text(cv_path)
         
         report = agent.generate_ats_report(cv_text, req.job_description)
         
