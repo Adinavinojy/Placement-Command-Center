@@ -270,7 +270,7 @@ class EventRequest(BaseModel):
 def add_event(req: EventRequest, background_tasks: BackgroundTasks, email: str = Depends(get_current_user)):
     try:
         db.upsert_deadline(email, req.company, req.title, req.date)
-        background_tasks.add_task(trigger_plan_regeneration, trigger=f"Event added: {req.company} {req.title}")
+        background_tasks.add_task(trigger_plan_regeneration, email, trigger=f"Event added: {req.company} {req.title}")
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1056,7 +1056,7 @@ def handle_command(msg: ChatMessage, background_tasks: BackgroundTasks, email: s
                     if formatted_tt:
                         vault.write_timetable(email, formatted_tt)
                         # AUTO-TRIGGER: regenerate study plan with new available hours
-                        background_tasks.add_task(trigger_plan_regeneration, "timetable_update")
+                        background_tasks.add_task(trigger_plan_regeneration, email, trigger="timetable_update")
                         return {"response": "✅ Timetable saved! Regenerating your study plan with your updated schedule in the background..."}
             except Exception as e:
                 print("Could not parse timetable JSON", e)
@@ -1089,7 +1089,7 @@ def handle_command(msg: ChatMessage, background_tasks: BackgroundTasks, email: s
                         rows = c.execute("SELECT company, title, due_at FROM deadlines WHERE company = ?", (company_data.get("name"),)).fetchall()
                         matrix_str = ", ".join([f"{r['company']} ({r['title']}) due on {r['due_at']}" for r in rows])
 
-                        background_tasks.add_task(trigger_plan_regeneration, f"Added company: {company_data['name']}")
+                        background_tasks.add_task(trigger_plan_regeneration, email, trigger=f"Added company: {company_data['name']}")
 
                         return {"response": f"✅ Company **'{company_data['name']}'** added! Deadlines saved. Regenerating your study plan in the background..."}
             except Exception as e:
@@ -1181,7 +1181,7 @@ def handle_command(msg: ChatMessage, background_tasks: BackgroundTasks, email: s
                     instruction = parsed_resp["instruction"]
                     # Instead of sending the full plan JSON to Gemini (expensive),
                     # regenerate a fresh plan with the instruction baked in as context.
-                    background_tasks.add_task(trigger_plan_regeneration, f"Study update: {instruction[:80]}")
+                    background_tasks.add_task(trigger_plan_regeneration, email, trigger=f"Study update: {instruction[:80]}")
                     return {"response": f"✅ Updating your study plan with: *'{instruction}'*. Ready in a few seconds..."}
 
             except Exception as e:
@@ -1192,7 +1192,7 @@ def handle_command(msg: ChatMessage, background_tasks: BackgroundTasks, email: s
             parsed = agent._extract_json_object(resp)
             if parsed.get("action") == "focus_update":
                 topics = parsed.get("topics", "")
-                background_tasks.add_task(trigger_plan_regeneration, f"Focus request: {topics}")
+                background_tasks.add_task(trigger_plan_regeneration, email, trigger=f"Focus request: {topics}")
                 return {"response": f"✅ Got it! I'll focus your study plan on **{topics}**. Updating in the background..."}
         except Exception:
             pass
