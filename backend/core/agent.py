@@ -885,7 +885,7 @@ Return ONLY a valid JSON object matching exactly this schema:
   "actionable_advice": ["Actionable step 1", "Actionable step 2"]
 }}
 """
-    r = _call_gemini(prompt, system_prompt="You are an expert ATS. You must return only a valid JSON object.")
+    r = _call_gemini_fallback(prompt, system="You are an expert ATS. You must return only a valid JSON object.")
     try:
         return _extract_json_object(r)
     except Exception as e:
