@@ -364,7 +364,7 @@ def generate_assessment(background_tasks: BackgroundTasks, email: str = Depends(
         # ── Aptitude: Pull from static bank ────────────
         base_dir = os.path.dirname(os.path.abspath(__file__))
         qbank_path = os.path.join(base_dir, "question_bank.json")
-        seen_path  = os.path.join(base_dir, "seen_questions.json")
+        seen_path  = vault.get_vault_path(email) / "Generated" / "seen_questions.json"
         with open(qbank_path, encoding="utf-8") as f:
             qbank = _json.load(f)
         seen = {}

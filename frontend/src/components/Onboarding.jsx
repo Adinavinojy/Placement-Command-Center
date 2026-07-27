@@ -164,7 +164,18 @@ export default function Onboarding({ initialData, onComplete }) {
                         Almost there! After completing this, please navigate to <strong className="text-[#cba36b]">Documents</strong> to upload your academic records, and take the Initial <strong className="text-[#cba36b]">Assessment</strong> to unlock your personalized Dashboard.
                      </p>
                      
-                     <div className="flex justify-end border-t border-[#2a2522] pt-6">
+                     <div className="flex justify-between items-center border-t border-[#2a2522] pt-6">
+                        <button
+                           type="button"
+                           onClick={() => {
+                              localStorage.removeItem('mentor_token');
+                              localStorage.removeItem('mentor_user');
+                              window.location.reload();
+                           }}
+                           className="text-sm text-[#8a7b6b] hover:text-[#cba36b] transition-colors"
+                        >
+                           Switch Account
+                        </button>
                         <button
                            type="submit"
                            disabled={isSubmitting}
