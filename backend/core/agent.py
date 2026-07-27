@@ -863,4 +863,37 @@ Write a concise, actionable preparation guide with:
 Format as clean Markdown with ## headings. Keep it under 200 words. Be specific and practical."""
 
     resp = _call_gemini_fallback(prompt)
-    return resp.strip() if resp else ""
+    return resp.strip() if resp else ""
+
+def generate_ats_report(cv_text: str, job_description: str) -> dict:
+    prompt = f"""You are an elite Applicant Tracking System (ATS) and expert career coach.
+I am providing a candidate's CV and a Job Description (JD).
+Your task is to analyze the CV against the JD and generate a strict JSON report.
+
+Job Description:
+{job_description}
+
+Candidate CV:
+{cv_text}
+
+Return ONLY a valid JSON object matching exactly this schema:
+{{
+  "match_score": <integer from 0 to 100>,
+  "missing_keywords": ["list", "of", "missing", "keywords"],
+  "matching_keywords": ["list", "of", "found", "keywords"],
+  "formatting_feedback": "Short feedback on CV layout/structure for ATS parsing.",
+  "actionable_advice": ["Actionable step 1", "Actionable step 2"]
+}}
+"""
+    r = _call_gemini(prompt, system_prompt="You are an expert ATS. You must return only a valid JSON object.")
+    try:
+        return _extract_json_object(r)
+    except Exception as e:
+        print(f"Failed to parse ATS report JSON: {e}")
+        return {
+            "match_score": 0,
+            "missing_keywords": [],
+            "matching_keywords": [],
+            "formatting_feedback": "Failed to parse ATS response.",
+            "actionable_advice": ["Please try again."]
+        }
