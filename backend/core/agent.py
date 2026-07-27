@@ -400,34 +400,27 @@ def evaluate_answer(question_text, approach, solved_it):
 
 def calculate_available_hours(timetable_text):
     """
-    Uses the offline Ollama model to calculate available study hours from the timetable text.
+    Calculates available study hours from the timetable text using simple parsing.
     It performs 24 - (CollegeHours + CourseHours + SleepTime + OtherTime).
     """
-    prompt = f"""
-    You are a timetable calculator. I will give you a list of hours spent on various activities.
-    Your task is to calculate the remaining available hours in a 24-hour day.
-    Formula: 24 - (CollegeHours + CourseHours + SleepTime + OtherTime)
-    
-    If an activity is missing, treat its value as 0.
-    
-    Timetable:
-    {timetable_text}
-    
-    Output ONLY a raw JSON object with the key "available_hours" mapped to the calculated number.
-    Do not include markdown or explanations.
-    """
-    content = _call_fast(prompt)
-    if not content:
+    if not timetable_text:
         return 4.0
         
-    result = _extract_json_object(content)
-    if result and "available_hours" in result:
-        try:
-            return float(result["available_hours"])
-        except (ValueError, TypeError):
-            pass
-            
-    return 4.0
+    total_spent = 0.0
+    for line in timetable_text.split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+        # Expecting lines like "CollegeHours: 6"
+        parts = line.split(':')
+        if len(parts) == 2:
+            try:
+                total_spent += float(parts[1].strip())
+            except ValueError:
+                pass
+                
+    available = 24.0 - total_spent
+    return max(0.0, available)
 
 
 def evaluate_assessment_results(results_data: dict, existing_skills: list = None) -> list[dict]:
