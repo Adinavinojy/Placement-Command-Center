@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { fetchAuth } from '../api';
+import { fetchAuth, API_BASE } from '../api';
 
 export default function Onboarding({ initialData, onComplete }) {
    const [formData, setFormData] = useState({

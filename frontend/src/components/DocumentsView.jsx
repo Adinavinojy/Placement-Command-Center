@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Folder, FileText, Upload, Trash2, Eye, X, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchAuth } from '../api';
+import { fetchAuth, API_BASE } from '../api';
 
 const CATEGORIES = [
   "CV", "10th Grade", "12th Grade", "Semester 1", "Semester 2", 

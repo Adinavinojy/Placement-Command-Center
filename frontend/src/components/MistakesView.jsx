@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { fetchAuth } from '../api';
+import { fetchAuth, API_BASE } from '../api';
 import { AlertTriangle, Clock, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
 
 export default function MistakesView() {

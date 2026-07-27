@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Folder, FileText, Upload, Trash2, Eye, Download, Search, RefreshCw, X, CheckCircle, Clock } from 'lucide-react';
-import { fetchAuth } from '../api';
+import { fetchAuth, API_BASE } from '../api';
 
 export default function NotesView({ onUpdate }) {
   const [documents, setDocuments] = useState({});

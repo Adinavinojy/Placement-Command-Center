@@ -13,7 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import './index.css';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchAuth } from './api';
+import { fetchAuth, API_BASE } from './api';
 
 const SidebarItem = ({ icon: Icon, text, active = false, onClick, disabled = false, onDisabledClick }) => (
   <div onClick={disabled ? onDisabledClick : onClick} className={`flex items-center space-x-4 px-6 py-3 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active && !disabled ? 'bg-[#1e1916] border-l-2 border-[#cba36b] text-[#cba36b]' : disabled ? 'text-gray-500' : 'text-gray-400 hover:text-[#e0d8cd] hover:bg-[#161311]'}`}>

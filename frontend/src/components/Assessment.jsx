@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Code, FileText, ArrowRight, PauseCircle, PlayCircle, CheckCircle, X, Clock, Zap, Brain, BookOpen, ChevronRight, ChevronDown, AlertTriangle, RefreshCw, Trophy, Target, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchAuth } from '../api';
+import { fetchAuth, API_BASE } from '../api';
 
 // ── Timer config ─────────────────────────────────────────────────────────────
 const INITIAL_APT_SECS  = 30 * 60;   // 30 min

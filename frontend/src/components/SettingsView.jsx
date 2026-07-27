@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Key, Download, Trash2, LogOut, X, Book } from 'lucide-react';
-import { fetchAuth } from '../api';
+import { fetchAuth, API_BASE } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 
